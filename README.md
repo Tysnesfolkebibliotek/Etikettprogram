@@ -19,7 +19,28 @@ Genererer boketiketter for Tysnes folkebibliotek basert på ISBN-oppslag mot Áj
 
 ---
 
-## Bruk
+## Nettlesarversjonen (ny)
+
+Programmet kan òg brukast i nettlesaren, i ei fane ved sida av dei andre.
+
+1. Dobbeltklikk **`start-web.bat`**. Eit svart vindauge opnar seg, og nettlesaren opnar **http://localhost:8765**.
+2. La det svarte vindauget stå ope (det kan minimerast). Lukkar du det, stoppar programmet.
+3. Lag gjerne eit bokmerke til http://localhost:8765, eller fest fana.
+
+Slik fungerer det: `server.py` køyrer på PC-en og gjer Ája-oppslaga og utskrifta (via `dymo-sdk`, som før). Nettsida i `web/` er berre skjermen. Programmet svarar berre på førespurnader frå denne PC-en.
+
+Nytt i nettlesarversjonen:
+- **Førehandsvising** av etiketten slik han blir skriven ut, oppdatert medan du skriv
+- Endringar i felta blir lagra med ein gong – ingen «Lagre»-knapp
+- Lista blir verande om du lastar sida på nytt, og utskrivne bøker blir merkte
+- Etter utskrift går programmet vidare til neste bok i lista
+- Snarvegar: **Ctrl+Enter** skriv ut, **Delete** fjernar, **pil opp/ned** blar i lista
+
+**Start automatisk ved innlogging:** Trykk Windows+R, skriv `shell:startup` og trykk Enter. Lag ein snarveg til `start-web.bat` i mappa som opnar seg. Vil du ikkje at nettlesaren skal opne seg kvar gong, legg til ` --ikkje-opne` bak `start-web.bat` i målfeltet til snarvegen.
+
+---
+
+## Bruk (den gamle versjonen)
 
 1. Dobbeltklikk **`start.bat`** for å opne programmet
 2. **Scan eller skriv inn ISBN** i feltet øvst til venstre, trykk Enter (eller "Legg til")
@@ -63,9 +84,13 @@ For sakprosa (Dewey utanfor 800–899) blir forkortinga på etiketten sett saman
 
 | Fil | Innhald |
 |---|---|
-| `app.py` | Sjølve programmet |
+| `app.py` | Den gamle versjonen (eige vindauge) |
+| `server.py` | Nettlesarversjonen – startar den lokale nettstaden |
+| `kjerne.py` | Oppslag, kategoriar, etikettgenerering og utskrift (brukt av `server.py`) |
+| `web/index.html` | Nettsida |
+| `start-web.bat` | Startar nettlesarversjonen |
 | `installer.bat` | Installerer Python-pakkane |
-| `start.bat` | Startar programmet |
+| `start.bat` | Startar den gamle versjonen |
 | `requirements.txt` | Liste over Python-pakkar |
 | `*.dymo` | Etikettmalane |
 

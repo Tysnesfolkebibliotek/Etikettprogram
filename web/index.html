@@ -1,0 +1,887 @@
+<!doctype html>
+<html lang="nn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Boketikettar</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='9' y='2' width='14' height='28' rx='2' fill='%232f4b6e'/%3E%3Crect x='11' y='18' width='10' height='9' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --papir: #eef1f3;
+    --flate: #ffffff;
+    --blekk: #1b2430;
+    --dempa: #5b6673;
+    --linje: #cbd3da;
+    --bokbind: #2f4b6e;
+    --bokbind-lys: #3c5d86;
+    --stempel: #b4232c;
+    --stempel-mork: #8f1b22;
+    --ok: #1d6b45;
+    --merk: #e4ebf2;
+    --fokus: #2f6fd6;
+    --skugge: 0 1px 2px rgba(27,36,48,.08), 0 6px 18px rgba(27,36,48,.10);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --papir: #121820; --flate: #1a222c; --blekk: #e6eaee; --dempa: #9aa6b2;
+      --linje: #2e3a47; --bokbind: #34557c; --bokbind-lys: #4a6f9c;
+      --stempel: #d0434b; --stempel-mork: #b4232c; --ok: #4cc38a; --merk: #243140;
+      --fokus: #7aa7ff; --skugge: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --papir: #121820; --flate: #1a222c; --blekk: #e6eaee; --dempa: #9aa6b2;
+    --linje: #2e3a47; --bokbind: #34557c; --bokbind-lys: #4a6f9c;
+    --stempel: #d0434b; --stempel-mork: #b4232c; --ok: #4cc38a; --merk: #243140;
+    --fokus: #7aa7ff; --skugge: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0; background: var(--papir); color: var(--blekk);
+    font: 15px/1.45 "Atkinson Hyperlegible Next", "Segoe UI", system-ui, sans-serif;
+  }
+  button, input, select { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--fokus); outline-offset: 2px; }
+
+  /* ── Ramme ─────────────────────────────────────────── */
+  .app {
+    height: 100vh; display: grid;
+    grid-template-rows: auto 1fr;
+    grid-template-columns: minmax(250px, 320px) minmax(300px, 1fr) minmax(320px, 400px);
+    grid-template-areas: "scan scan scan" "ko hylle skjema";
+  }
+
+  /* ── Scannerfeltet ─────────────────────────────────── */
+  .scan {
+    grid-area: scan; display: flex; align-items: center; gap: 14px;
+    padding: 14px 20px; background: var(--bokbind); color: #fff;
+  }
+  .scan h1 { margin: 0; font-size: 1.05rem; font-weight: 700; white-space: nowrap; }
+  .scan form { flex: 1; display: flex; gap: 8px; max-width: 760px; }
+  .scan input {
+    flex: 1; min-width: 0; padding: 11px 14px; font-size: 1.15rem;
+    border: 2px solid transparent; border-radius: 8px;
+    background: #fff; color: #1b2430;
+  }
+  .scan input::placeholder { color: #7b8794; }
+  .scan input:focus-visible { outline: none; border-color: #9cc0ff; }
+  .scan .leggtil {
+    padding: 0 18px; border: 0; border-radius: 8px; font-weight: 600;
+    background: rgba(255,255,255,.16); color: #fff; cursor: pointer;
+  }
+  .scan .leggtil:hover { background: rgba(255,255,255,.26); }
+  .scan .meny { margin-left: auto; display: flex; gap: 6px; }
+  .ikonknapp {
+    border: 0; background: transparent; color: inherit; cursor: pointer;
+    padding: 8px 10px; border-radius: 8px; font-weight: 600;
+  }
+  .scan .ikonknapp:hover { background: rgba(255,255,255,.14); }
+
+  /* ── Kø (venstre) ──────────────────────────────────── */
+  .ko {
+    grid-area: ko; display: flex; flex-direction: column; min-height: 0;
+    border-right: 1px solid var(--linje); background: var(--flate);
+  }
+  .ko-topp { display: flex; align-items: baseline; justify-content: space-between; padding: 16px 16px 8px; }
+  .ko-topp h2 { margin: 0; font-size: 1rem; }
+  .ko-topp span { color: var(--dempa); font-size: .9rem; }
+  .liste { list-style: none; margin: 0; padding: 0 8px; overflow-y: auto; flex: 1; }
+  .liste li {
+    display: grid; grid-template-columns: 6px 1fr auto; gap: 10px; align-items: center;
+    padding: 8px 10px 8px 0; border-radius: 6px; cursor: pointer; margin-bottom: 2px;
+  }
+  .liste li:hover { background: var(--merk); }
+  .liste li[aria-selected="true"] { background: var(--merk); box-shadow: inset 0 0 0 1px var(--bokbind-lys); }
+  .liste .rygg { align-self: stretch; border-radius: 0 3px 3px 0; background: var(--dempa); }
+  .liste .tittel { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .liste .meta { color: var(--dempa); font-size: .85rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .liste .tag { font-size: .75rem; color: var(--dempa); white-space: nowrap; }
+  .liste .tag.ol { color: var(--stempel); }
+  .liste li.utskriven .tittel, .liste li.utskriven .meta { opacity: .55; }
+  .tom { color: var(--dempa); padding: 24px 16px; margin: 0; }
+  .ko-botn { padding: 12px 16px 16px; border-top: 1px solid var(--linje); display: grid; gap: 8px; }
+
+  /* ── Knappar ───────────────────────────────────────── */
+  .knapp {
+    border: 1px solid var(--linje); background: var(--flate); color: var(--blekk);
+    padding: 9px 14px; border-radius: 8px; cursor: pointer; font-weight: 600;
+  }
+  .knapp:hover:not(:disabled) { border-color: var(--dempa); }
+  .knapp:disabled { opacity: .45; cursor: default; }
+  .knapp.trykk { background: var(--stempel); border-color: var(--stempel); color: #fff; }
+  .knapp.trykk:hover:not(:disabled) { background: var(--stempel-mork); border-color: var(--stempel-mork); }
+  .knapp.stille { border-color: transparent; background: transparent; color: var(--dempa); }
+  .knapp.stille:hover:not(:disabled) { color: var(--blekk); border-color: transparent; }
+
+  /* ── Hylla (midten): ryggen med etiketten ──────────── */
+  .hylle {
+    grid-area: hylle; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 22px; padding: 24px; min-height: 0; overflow: auto;
+  }
+  .ryggbok {
+    position: relative; width: 260px; height: 600px; max-height: calc(100vh - 230px);
+    min-height: 470px; border-radius: 6px 6px 4px 4px;
+    background:
+      repeating-linear-gradient(0deg, rgba(255,255,255,.035) 0 1px, transparent 1px 3px),
+      repeating-linear-gradient(90deg, rgba(0,0,0,.05) 0 1px, transparent 1px 3px),
+      linear-gradient(90deg, rgba(0,0,0,.28), rgba(255,255,255,.06) 18%, rgba(0,0,0,0) 50%, rgba(255,255,255,.05) 82%, rgba(0,0,0,.3)),
+      var(--ryggfarge, var(--bokbind));
+    box-shadow: var(--skugge);
+    transition: background-color .25s;
+  }
+  .ryggbok .ryggtittel {
+    position: absolute; left: 50%; top: 28px; transform: translateX(-50%);
+    writing-mode: vertical-rl; color: rgba(255,255,255,.88); font-weight: 600;
+    max-height: calc(100% - 300px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    letter-spacing: .02em;
+  }
+  .ryggbok .etikettplass { position: absolute; left: 50%; bottom: 26px; transform: translateX(-50%); }
+  .etikett {
+    position: relative; background: #fff; color: #000;
+    box-shadow: 0 1px 1px rgba(0,0,0,.25), 0 3px 8px rgba(0,0,0,.18);
+    border-radius: 3px; overflow: hidden;
+  }
+  .etikett .obj { position: absolute; display: flex; }
+  .etikett .rot { position: absolute; display: flex; left: 50%; top: 50%; }
+  .etikett .tekst { white-space: pre; line-height: 1.05; }
+  .etikett .ellipse { position: absolute; border: 1.4px solid #000; border-radius: 50%; }
+  .etikett .strek { position: absolute; height: 0; border-top: 1.2px solid #000; }
+  .forhand-tom {
+    position: absolute; inset: auto 0 40px; text-align: center; color: rgba(255,255,255,.75); padding: 0 24px;
+  }
+  .hylle-handling { display: flex; gap: 10px; align-items: center; }
+  .hylle-handling .snarveg { color: var(--dempa); font-size: .85rem; }
+
+  /* ── Skjema (høgre) ────────────────────────────────── */
+  .skjema {
+    grid-area: skjema; background: var(--flate); border-left: 1px solid var(--linje);
+    overflow-y: auto; padding: 18px 20px 24px;
+  }
+  .bokhovud { display: grid; grid-template-columns: 64px 1fr; gap: 14px; align-items: start; margin-bottom: 18px; }
+  .bokhovud.utan-omslag { grid-template-columns: 1fr; }
+  .bokhovud.utan-omslag .omslag { display: none; }
+  .omslag {
+    width: 64px; height: 92px; border-radius: 3px; background: var(--merk); object-fit: cover;
+    box-shadow: 0 1px 3px rgba(0,0,0,.15);
+  }
+  .bokhovud h2 { margin: 0 0 4px; font-size: 1.1rem; line-height: 1.25; }
+  .bokhovud p { margin: 0; color: var(--dempa); font-size: .9rem; }
+  .merke { display: inline-block; margin-top: 8px; padding: 2px 8px; border-radius: 4px; font-size: .8rem; font-weight: 600; color: #fff; background: var(--dempa); }
+  .merke + .merke { margin-left: 4px; background: transparent; color: var(--dempa); border: 1px solid var(--linje); }
+  fieldset { border: 0; padding: 0; margin: 0 0 14px; display: grid; gap: 10px; }
+  legend { font-weight: 700; font-size: .85rem; color: var(--dempa); margin-bottom: 6px; padding: 0; }
+  label { display: grid; gap: 3px; font-size: .85rem; color: var(--dempa); }
+  .skjema input, .skjema select {
+    width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--linje);
+    background: var(--papir); color: var(--blekk); font-size: .95rem;
+  }
+  .to { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .skjema .tomt { color: var(--dempa); margin-top: 40px; text-align: center; }
+
+  /* ── Dialogar ──────────────────────────────────────── */
+  dialog {
+    border: 0; border-radius: 12px; padding: 0; width: min(560px, calc(100vw - 32px));
+    background: var(--flate); color: var(--blekk); box-shadow: 0 20px 60px rgba(0,0,0,.35);
+  }
+  dialog::backdrop { background: rgba(18,24,32,.5); }
+  .dlg-hovud { padding: 18px 20px 6px; }
+  .dlg-hovud h2 { margin: 0; font-size: 1.1rem; }
+  .dlg-hovud p { margin: 4px 0 0; color: var(--dempa); font-size: .9rem; }
+  .dlg-kropp { padding: 10px 20px; max-height: 62vh; overflow-y: auto; }
+  .dlg-botn { display: flex; justify-content: flex-end; gap: 8px; padding: 12px 20px 18px; }
+  .treff { list-style: none; margin: 0; padding: 0; }
+  .treff button {
+    width: 100%; text-align: left; padding: 10px 12px; border: 1px solid transparent; border-radius: 8px;
+    background: transparent; cursor: pointer; display: grid; gap: 1px;
+  }
+  .treff button:hover, .treff button:focus-visible { background: var(--merk); }
+  .treff span { color: var(--dempa); font-size: .88rem; }
+  .serierad { display: grid; grid-template-columns: auto 1fr; gap: 8px; align-items: center; margin-bottom: 6px; }
+  .serierad input[type="text"] {
+    padding: 7px 9px; border-radius: 6px; border: 1px solid var(--linje); background: var(--papir); color: var(--blekk);
+  }
+  .seriegruppe { margin-bottom: 16px; }
+  .seriegruppe h3 { font-size: .85rem; color: var(--dempa); margin: 4px 0 8px; }
+  .seriegruppe .etikett { margin: 10px auto 0; }
+  .serie-isbn { display: flex; gap: 8px; }
+  .serie-isbn input { flex: 1; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--linje); background: var(--papir); color: var(--blekk); }
+  .innst label { margin-bottom: 12px; }
+  .innst input { padding: 8px 10px; border-radius: 6px; border: 1px solid var(--linje); background: var(--papir); color: var(--blekk); }
+
+  /* ── Statuslinje ───────────────────────────────────── */
+  .status {
+    position: fixed; left: 50%; bottom: 18px; transform: translate(-50%, 20px); opacity: 0;
+    background: var(--blekk); color: var(--papir); padding: 10px 16px; border-radius: 8px;
+    box-shadow: var(--skugge); transition: opacity .2s, transform .2s; pointer-events: none;
+    max-width: calc(100vw - 32px); z-index: 10;
+  }
+  .status.vis { opacity: 1; transform: translate(-50%, 0); }
+  .status.feil { background: var(--stempel); color: #fff; }
+  .kontaktfeil {
+    position: fixed; inset: 0; display: none; place-items: center; background: rgba(18,24,32,.6); z-index: 20; padding: 16px;
+  }
+  .kontaktfeil.vis { display: grid; }
+  .kontaktfeil div { background: var(--flate); padding: 24px; border-radius: 12px; max-width: 420px; }
+  .kontaktfeil h2 { margin: 0 0 8px; font-size: 1.1rem; }
+  .kontaktfeil p { margin: 0; color: var(--dempa); }
+
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+  @media (max-width: 980px) {
+    .app { grid-template-columns: 1fr; grid-template-rows: auto auto auto auto; grid-template-areas: "scan" "hylle" "skjema" "ko"; height: auto; }
+    .ryggbok { height: 520px; }
+    .scan { flex-wrap: wrap; }
+    .scan form { order: 3; flex-basis: 100%; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="scan">
+    <h1>Boketikettar</h1>
+    <form id="scanskjema" autocomplete="off">
+      <input id="scan" placeholder="Scan ISBN eller skriv tittel" aria-label="ISBN eller tittel" autofocus>
+      <button class="leggtil" type="submit">Legg til</button>
+    </form>
+    <nav class="meny">
+      <button class="ikonknapp" id="serieknapp" type="button">Serieliste</button>
+      <button class="ikonknapp" id="innstknapp" type="button">Skrivar</button>
+    </nav>
+  </header>
+
+  <aside class="ko" aria-label="Bøker som ventar på etikett">
+    <div class="ko-topp"><h2>Bøker i lista</h2><span id="teljar"></span></div>
+    <ul class="liste" id="liste" role="listbox" aria-label="Bøker"></ul>
+    <div class="ko-botn">
+      <button class="knapp" id="skrivalle" type="button">Skriv ut alle</button>
+      <div style="display:flex;gap:8px">
+        <button class="knapp stille" id="tomutskrivne" type="button">Fjern utskrivne</button>
+        <button class="knapp stille" id="fjern" type="button">Fjern vald</button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="hylle">
+    <div class="ryggbok" id="ryggbok">
+      <div class="ryggtittel" id="ryggtittel"></div>
+      <div class="etikettplass" id="forhand"></div>
+      <p class="forhand-tom" id="forhandtom">Scan ei bok, så ser du etiketten her.</p>
+    </div>
+    <div class="hylle-handling">
+      <button class="knapp trykk" id="skrivut" type="button" disabled>Skriv ut etikett</button>
+      <span class="snarveg">Ctrl+Enter</span>
+    </div>
+  </main>
+
+  <section class="skjema" id="skjema" aria-label="Kontroller og rediger">
+    <p class="tomt" id="skjematom">Vel ei bok i lista for å kontrollere felta.</p>
+    <div id="skjemainnhald" hidden>
+      <div class="bokhovud">
+        <img class="omslag" id="omslag" alt="">
+        <div>
+          <h2 id="hovudtittel"></h2>
+          <p id="hovudforf"></p>
+          <span class="merke" id="katmerke"></span><span class="merke" id="malmerke"></span>
+        </div>
+      </div>
+      <fieldset>
+        <legend>Boka</legend>
+        <label>Tittel <input data-felt="tittel"></label>
+        <label>Forfattar <input data-felt="forfatter"></label>
+      </fieldset>
+      <fieldset>
+        <legend>Etiketten</legend>
+        <label>Kategori <input data-felt="kategori" list="kategoriar"></label>
+        <div class="to">
+          <label>Hyllekode <input data-felt="shelf"></label>
+          <label>Målform <select data-felt="malfom" id="malform"></select></label>
+        </div>
+        <div class="to">
+          <label>Dewey <input data-felt="dewey"></label>
+          <label>Emne (sakprosa) <input data-felt="emne"></label>
+        </div>
+        <div class="to">
+          <label>Serienamn <input data-felt="serie"></label>
+          <label>Nummer i serien <input data-felt="nummer" inputmode="numeric"></label>
+        </div>
+      </fieldset>
+      <datalist id="kategoriar"></datalist>
+    </div>
+  </section>
+</div>
+
+<!-- Tittelsøk -->
+<dialog id="sokdlg">
+  <div class="dlg-hovud"><h2 id="soktittel">Treff</h2><p>Vel boka du vil leggje til.</p></div>
+  <div class="dlg-kropp"><ul class="treff" id="sokliste"></ul></div>
+  <div class="dlg-botn"><button class="knapp" value="avbryt" formmethod="dialog" onclick="this.closest('dialog').close()">Avbryt</button></div>
+</dialog>
+
+<!-- Serieliste -->
+<dialog id="seriedlg">
+  <div class="dlg-hovud"><h2 id="serietittel">Serieliste</h2><p id="seriehjelp">Skriv inn ISBN til ei bok i serien.</p></div>
+  <div class="dlg-kropp">
+    <form class="serie-isbn" id="serieskjema" autocomplete="off">
+      <input id="serieisbn" placeholder="ISBN" aria-label="ISBN">
+      <button class="knapp" type="submit">Hent serie</button>
+    </form>
+    <div id="serieinnhald"></div>
+  </div>
+  <div class="dlg-botn">
+    <button class="knapp stille" type="button" onclick="this.closest('dialog').close()">Lukk</button>
+    <button class="knapp trykk" type="button" id="serieskrivut" hidden>Skriv ut serieliste</button>
+  </div>
+</dialog>
+
+<!-- Skrivar -->
+<dialog id="innstdlg">
+  <form method="dialog" class="innst" id="innstskjema">
+    <div class="dlg-hovud"><h2>Skrivar</h2><p>Namnet slik det står i Windows under Skrivarar og skannarar.</p></div>
+    <div class="dlg-kropp"><label>Skrivarnamn <input id="skrivarnamn"></label></div>
+    <div class="dlg-botn">
+      <button class="knapp stille" value="avbryt">Avbryt</button>
+      <button class="knapp" value="lagre" id="lagreskrivar">Lagre</button>
+    </div>
+  </form>
+</dialog>
+
+<div class="status" id="status" role="status" aria-live="polite"></div>
+<div class="kontaktfeil" id="kontaktfeil" role="alert">
+  <div><h2>Etikettprogrammet køyrer ikkje</h2><p>Start det med <b>start-web.bat</b>, og last denne sida på nytt.</p></div>
+</div>
+
+<script>
+"use strict";
+
+// ── Tilstand ─────────────────────────────────────────────────────────
+const LAGER = "boketikett-liste";
+let konfig = { kategoriar: [], malformer: ["Bokmål", "Nynorsk", "Engelsk"], fargar: {}, skrivar: "" };
+let bøker = [];
+let valdId = null;
+const $ = id => document.getElementById(id);
+
+function lagreLista() {
+  try { localStorage.setItem(LAGER, JSON.stringify({ bøker, valdId })); } catch (_) {}
+}
+function lesLista() {
+  try {
+    const d = JSON.parse(localStorage.getItem(LAGER) || "null");
+    if (d && Array.isArray(d.bøker)) { bøker = d.bøker; valdId = d.valdId; }
+  } catch (_) {}
+}
+const vald = () => bøker.find(b => b.id === valdId) || null;
+const nyId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+
+// ── Kontakt med tenaren ──────────────────────────────────────────────
+async function api(sti, data) {
+  let r;
+  try {
+    r = await fetch(sti, data === undefined ? {} : {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data),
+    });
+  } catch (e) {
+    $("kontaktfeil").classList.add("vis");
+    throw new Error("Fekk ikkje kontakt med etikettprogrammet");
+  }
+  $("kontaktfeil").classList.remove("vis");
+  const svar = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(svar.feil || "Feil frå programmet (" + r.status + ")");
+  return svar;
+}
+
+let statusTimer;
+function melding(tekst, feil = false) {
+  const s = $("status");
+  s.textContent = tekst;
+  s.className = "status vis" + (feil ? " feil" : "");
+  clearTimeout(statusTimer);
+  statusTimer = setTimeout(() => s.classList.remove("vis"), feil ? 6000 : 3000);
+}
+
+// ── Kategorifargar ───────────────────────────────────────────────────
+function katFarge(kat) {
+  const k = (kat || "").toLowerCase();
+  for (const [nøkkel, farge] of Object.entries(konfig.fargar)) if (k.includes(nøkkel)) return farge;
+  return "#4a5568";
+}
+
+// ── Legg til bøker ───────────────────────────────────────────────────
+function tomBok(isbn) {
+  return { tittel: "", forfatter: "", shelf: "", dewey: "", kategori: "", emne: "", serie: "", nummer: "",
+           malfom: "Bokmål", er_sakprosa: false, er_biletbok: false, kjelde: "manuell", isbn };
+}
+
+function leggTil(bok) {
+  bok.id = nyId();
+  bøker.push(bok);
+  valdId = bok.id;
+  lagreLista();
+  teikn();
+}
+
+async function handsamScan(tekst) {
+  tekst = tekst.trim();
+  if (!tekst) return;
+  const isbn = tekst.replace(/[\s-]/g, "");
+  if (/^(\d{9}[\dXx]|\d{13})$/.test(isbn)) {
+    melding("Slår opp " + isbn + " …");
+    try {
+      const { bok } = await api("/api/isbn?isbn=" + encodeURIComponent(isbn));
+      if (!bok) {
+        leggTil(tomBok(isbn));
+        melding("Fann ikkje " + isbn + " i Ája eller Open Library. Fyll inn felta sjølv.", true);
+      } else {
+        leggTil(bok);
+        melding(bok.kjelde === "openlibrary"
+          ? "Henta frå Open Library – sjekk Dewey og serie: " + bok.tittel
+          : "Lagt til: " + bok.tittel);
+      }
+    } catch (e) { melding(e.message, true); }
+  } else {
+    melding("Søkjer etter «" + tekst + "» …");
+    try {
+      const { bøker: treff } = await api("/api/sok?tittel=" + encodeURIComponent(tekst));
+      if (!treff.length) return melding("Ingen treff på «" + tekst + "» i Ája.", true);
+      visSøketreff(tekst, treff);
+    } catch (e) { melding(e.message, true); }
+  }
+}
+
+function visSøketreff(søk, treff) {
+  $("soktittel").textContent = "Treff på «" + søk + "»";
+  const ul = $("sokliste");
+  ul.innerHTML = "";
+  for (const bok of treff) {
+    const li = document.createElement("li");
+    const b = document.createElement("button");
+    b.type = "button";
+    b.innerHTML = "<b></b><span></span>";
+    b.querySelector("b").textContent = bok.tittel || "(utan tittel)";
+    b.querySelector("span").textContent = [bok.forfatter, bok.isbn].filter(Boolean).join(", ");
+    b.onclick = () => { $("sokdlg").close(); leggTil(bok); melding("Lagt til: " + bok.tittel); $("scan").focus(); };
+    li.append(b);
+    ul.append(li);
+  }
+  $("sokdlg").showModal();
+  ul.querySelector("button")?.focus();
+}
+
+$("scanskjema").addEventListener("submit", e => {
+  e.preventDefault();
+  const v = $("scan").value;
+  $("scan").value = "";
+  handsamScan(v);
+});
+
+// ── Lista ────────────────────────────────────────────────────────────
+function teiknListe() {
+  const ul = $("liste");
+  ul.innerHTML = "";
+  if (!bøker.length) {
+    const p = document.createElement("li");
+    p.className = "tom";
+    p.style.display = "block";
+    p.textContent = "Lista er tom. Scan ISBN-et på ei bok for å byrje.";
+    ul.append(p);
+  }
+  for (const bok of bøker) {
+    const li = document.createElement("li");
+    li.role = "option";
+    li.setAttribute("aria-selected", bok.id === valdId);
+    if (bok.utskriven) li.classList.add("utskriven");
+    li.innerHTML = '<span class="rygg"></span><div style="min-width:0"><div class="tittel"></div><div class="meta"></div></div><span class="tag"></span>';
+    li.querySelector(".rygg").style.background = katFarge(bok.kategori);
+    li.querySelector(".tittel").textContent = bok.tittel || bok.isbn || "(utan tittel)";
+    li.querySelector(".meta").textContent = [bok.kategori || bok.emne, bok.shelf].filter(Boolean).join(", ");
+    const tag = li.querySelector(".tag");
+    if (bok.utskriven) tag.textContent = "Skriven ut";
+    else if (bok.kjelde === "openlibrary") { tag.textContent = "Open Library"; tag.classList.add("ol"); }
+    else if (bok.kjelde === "manuell") { tag.textContent = "Manuell"; tag.classList.add("ol"); }
+    li.onclick = () => { valdId = bok.id; lagreLista(); teikn(); };
+    ul.append(li);
+  }
+  const n = bøker.length;
+  $("teljar").textContent = n ? n + (n === 1 ? " bok" : " bøker") : "";
+  $("skrivalle").disabled = !n;
+  $("fjern").disabled = !vald();
+  $("tomutskrivne").disabled = !bøker.some(b => b.utskriven);
+  ul.querySelector('[aria-selected="true"]')?.scrollIntoView({ block: "nearest" });
+}
+
+// ── Skjemaet ─────────────────────────────────────────────────────────
+function fyllSkjema() {
+  const bok = vald();
+  $("skjematom").hidden = !!bok;
+  $("skjemainnhald").hidden = !bok;
+  $("skrivut").disabled = !bok;
+  if (!bok) return;
+  for (const el of document.querySelectorAll("[data-felt]")) {
+    if (document.activeElement !== el) el.value = bok[el.dataset.felt] || "";
+  }
+  oppdaterHovud();
+  const img = $("omslag");
+  const hovud = img.parentElement;
+  img.onerror = () => hovud.classList.add("utan-omslag");
+  if (bok.cover_url) { hovud.classList.remove("utan-omslag"); if (img.getAttribute("src") !== bok.cover_url) img.src = bok.cover_url; }
+  else { img.removeAttribute("src"); hovud.classList.add("utan-omslag"); }
+}
+
+function oppdaterHovud() {
+  const bok = vald();
+  if (!bok) return;
+  $("hovudtittel").textContent = bok.tittel || "(utan tittel)";
+  $("hovudforf").textContent = [bok.forfatter, bok.isbn].filter(Boolean).join(", ");
+  const km = $("katmerke");
+  km.textContent = bok.kategori || (bok.er_sakprosa ? "Sakprosa" : "Ingen kategori");
+  km.style.background = katFarge(bok.kategori);
+  $("malmerke").textContent = bok.er_biletbok ? "Biletbok-mal" : "Standard-mal";
+}
+
+for (const el of document.querySelectorAll("[data-felt]")) {
+  el.addEventListener("input", () => {
+    const bok = vald();
+    if (!bok) return;
+    bok[el.dataset.felt] = el.value;
+    if (el.dataset.felt === "kategori") bok.er_biletbok = el.value.toLowerCase() === "biletbøker";
+    bok.utskriven = false;
+    lagreLista();
+    oppdaterHovud();
+    teiknListe();
+    planleggForhand();
+  });
+}
+
+// ── Førehandsvising: teiknar .dymo-XML-en slik han blir skriven ut ──
+const PX_PER_TOMME = 150;   // skala på skjermen
+
+function tal(el, sti) { return parseFloat(el?.querySelector(sti)?.textContent || "0") || 0; }
+
+function teiknEtikett(xmlTekst, skala = PX_PER_TOMME) {
+  const xml = new DOMParser().parseFromString(xmlTekst, "application/xml");
+  const rekt = xml.querySelector("DYMOLabel > DYMORect");
+  const rx = tal(rekt, "DYMOPoint > X"), ry = tal(rekt, "DYMOPoint > Y");
+  const bredd = (rx * 2 + tal(rekt, "Size > Width")) * skala;
+  const høgd = (ry * 2 + tal(rekt, "Size > Height")) * skala;
+
+  const flate = document.createElement("div");
+  flate.className = "etikett";
+  flate.style.width = bredd + "px";
+  flate.style.height = høgd + "px";
+
+  const objekt = xml.querySelector("LabelObjects")?.children || [];
+  const tilpass = [];
+  for (const o of objekt) {
+    const lay = o.querySelector(":scope > ObjectLayout");
+    const x = tal(lay, "DYMOPoint > X") * skala, y = tal(lay, "DYMOPoint > Y") * skala;
+    const w = tal(lay, "Size > Width") * skala, h = tal(lay, "Size > Height") * skala;
+
+    if (o.tagName === "LineObject") {
+      const l = document.createElement("div");
+      l.className = "strek";
+      Object.assign(l.style, { left: x + "px", top: (y + h / 2) + "px", width: w + "px" });
+      flate.append(l);
+      continue;
+    }
+    if (o.tagName === "ShapeObject") {
+      const e = document.createElement("div");
+      e.className = "ellipse";
+      Object.assign(e.style, { left: x + "px", top: y + "px", width: w + "px", height: h + "px" });
+      flate.append(e);
+      continue;
+    }
+    if (o.tagName !== "TextObject") continue;
+
+    const tekst = [...o.querySelectorAll("TextSpan > Text")].map(t => t.textContent).join("");
+    if (!tekst) continue;
+    const fi = o.querySelector("FontInfo");
+    const pt = parseFloat(fi?.querySelector("FontSize")?.textContent || "10");
+    const feit = fi?.querySelector("IsBold")?.textContent === "True";
+    const font = fi?.querySelector("FontName")?.textContent || "Segoe UI";
+    const halign = o.querySelector(":scope > HorizontalAlignment")?.textContent || "Center";
+    const valign = o.querySelector(":scope > VerticalAlignment")?.textContent || "Middle";
+    const tilpassa = o.querySelector(":scope > FitMode")?.textContent === "AlwaysFit";
+    const rotert = o.querySelector(":scope > Rotation")?.textContent === "Rotation90";
+
+    const boks = document.createElement("div");
+    boks.className = "obj";
+    Object.assign(boks.style, { left: x + "px", top: y + "px", width: w + "px", height: h + "px" });
+
+    // Rotert tekst: ein indre boks med bytte breidd/høgd, snudd 90° mot klokka
+    const indre = document.createElement("div");
+    const iw = rotert ? h : w, ih = rotert ? w : h;
+    indre.className = "rot";
+    Object.assign(indre.style, {
+      width: iw + "px", height: ih + "px",
+      transform: "translate(-50%, -50%)" + (rotert ? " rotate(-90deg)" : ""),
+      justifyContent: { Left: "flex-start", Right: "flex-end" }[halign] || "center",
+      alignItems: { Top: "flex-start", Bottom: "flex-end" }[valign] || "center",
+    });
+    const span = document.createElement("span");
+    span.className = "tekst";
+    span.textContent = tekst;
+    Object.assign(span.style, {
+      fontFamily: `"${font}", "Segoe UI", Arial, sans-serif`,
+      fontWeight: feit ? "700" : "400",
+      fontSize: (pt / 72 * skala) + "px",
+      textAlign: { Left: "left", Right: "right" }[halign] || "center",
+    });
+    indre.append(span);
+    boks.append(indre);
+    flate.append(boks);
+    if (tilpassa) tilpass.push({ span, iw, ih });
+  }
+
+  // «AlwaysFit»: gjer teksten så stor som han får plass til i boksen
+  requestAnimationFrame(() => {
+    for (const { span, iw, ih } of tilpass) {
+      let lo = 2, hi = ih * 1.2;
+      for (let i = 0; i < 14; i++) {
+        const mid = (lo + hi) / 2;
+        span.style.fontSize = mid + "px";
+        if (span.scrollWidth <= iw && span.scrollHeight <= ih) lo = mid; else hi = mid;
+      }
+      span.style.fontSize = lo + "px";
+    }
+  });
+  return flate;
+}
+
+let forhandTimer, forhandNr = 0;
+function planleggForhand() {
+  clearTimeout(forhandTimer);
+  forhandTimer = setTimeout(teiknForhand, 180);
+}
+async function teiknForhand() {
+  const bok = vald();
+  const plass = $("forhand");
+  $("forhandtom").hidden = !!bok;
+  $("ryggtittel").textContent = bok ? (bok.tittel || "") : "";
+  $("ryggbok").style.setProperty("--ryggfarge", bok ? blandFarge(katFarge(bok.kategori)) : "");
+  if (!bok) { plass.innerHTML = ""; return; }
+  const nr = ++forhandNr;
+  try {
+    const { xml } = await api("/api/forhandsvis", { bok });
+    if (nr !== forhandNr) return;   // eit nyare kall er på veg
+    plass.replaceChildren(teiknEtikett(xml));
+  } catch (e) { melding(e.message, true); }
+}
+// Ryggfargen: kategorifargen, dempa mot bokbind-blått så teksten på etiketten står ut
+function blandFarge(hex) {
+  const m = hex.match(/^#?([\da-f]{2})([\da-f]{2})([\da-f]{2})$/i);
+  if (!m) return "";
+  const [r, g, b] = m.slice(1).map(h => parseInt(h, 16));
+  const mix = (a, c) => Math.round(a * 0.62 + c * 0.38);
+  return `rgb(${mix(r, 47)}, ${mix(g, 75)}, ${mix(b, 110)})`;
+}
+
+// ── Utskrift ─────────────────────────────────────────────────────────
+async function skrivUt(bok) {
+  const svar = await api("/api/skriv-ut", { bok, skrivar: konfig.skrivar });
+  if (svar.ok) { bok.utskriven = true; lagreLista(); }
+  return svar;
+}
+
+$("skrivut").onclick = async () => {
+  const bok = vald();
+  if (!bok) return;
+  $("skrivut").disabled = true;
+  melding("Skriv ut: " + (bok.tittel || "etikett") + " …");
+  try {
+    const svar = await skrivUt(bok);
+    melding(svar.ok ? "Skriven ut: " + (bok.tittel || "etikett") : svar.melding, !svar.ok);
+    if (svar.ok) {
+      // gå vidare til neste bok som ikkje er skriven ut
+      const neste = bøker.find(b => !b.utskriven);
+      if (neste) valdId = neste.id;
+      lagreLista();
+    }
+  } catch (e) { melding(e.message, true); }
+  teikn();
+  $("scan").focus();
+};
+
+$("skrivalle").onclick = async () => {
+  const kø = bøker.filter(b => !b.utskriven);
+  if (!kø.length) return melding("Alle bøkene i lista er alt skrivne ut.");
+  if (!confirm("Skrive ut " + kø.length + (kø.length === 1 ? " etikett?" : " etikettar?"))) return;
+  $("skrivalle").disabled = true;
+  let feil = 0;
+  for (let i = 0; i < kø.length; i++) {
+    melding(`Skriv ut ${i + 1} av ${kø.length}: ${kø[i].tittel || "etikett"}`);
+    try { if (!(await skrivUt(kø[i])).ok) feil++; } catch (_) { feil++; }
+    teiknListe();
+  }
+  melding(feil ? `Ferdig, men ${feil} etikett${feil === 1 ? "" : "ar"} feila.` : `Skreiv ut ${kø.length} etikett${kø.length === 1 ? "" : "ar"}.`, feil > 0);
+  teikn();
+};
+
+// ── Fjerning ─────────────────────────────────────────────────────────
+function fjernVald() {
+  const i = bøker.findIndex(b => b.id === valdId);
+  if (i < 0) return;
+  bøker.splice(i, 1);
+  valdId = bøker[Math.min(i, bøker.length - 1)]?.id || null;
+  lagreLista();
+  teikn();
+}
+$("fjern").onclick = fjernVald;
+$("tomutskrivne").onclick = () => {
+  bøker = bøker.filter(b => !b.utskriven);
+  if (!vald()) valdId = bøker[0]?.id || null;
+  lagreLista();
+  teikn();
+};
+
+// ── Serieliste ───────────────────────────────────────────────────────
+let serieData = null;
+
+$("serieknapp").onclick = () => {
+  $("serieisbn").value = vald()?.isbn || "";
+  $("serieinnhald").innerHTML = "";
+  $("serieskrivut").hidden = true;
+  $("serietittel").textContent = "Serieliste";
+  $("seriehjelp").textContent = "Skriv inn ISBN til ei bok i serien.";
+  $("seriedlg").showModal();
+  $("serieisbn").focus();
+  if ($("serieisbn").value) $("serieisbn").select();
+};
+
+$("serieskjema").addEventListener("submit", async e => {
+  e.preventDefault();
+  const isbn = $("serieisbn").value.replace(/[\s-]/g, "");
+  if (!isbn) return;
+  $("seriehjelp").textContent = "Hentar serien …";
+  try {
+    const d = await api("/api/serie?isbn=" + encodeURIComponent(isbn));
+    if (d.feil) { $("seriehjelp").textContent = d.feil; return; }
+    visSerie(d);
+  } catch (err) { $("seriehjelp").textContent = err.message; }
+});
+
+function visSerie(d) {
+  // Grupper på 5 linjer per etikett. «aktiv» er indeksen over alle linjene.
+  const grupper = [];
+  for (let i = 0; i < d.bøker.length; i += 5) {
+    const linjer = d.bøker.slice(i, i + 5).map(b => b.nummer ? `${b.nummer}. ${b.tittel}` : b.tittel);
+    while (linjer.length < 5) linjer.push("");
+    grupper.push(linjer);
+  }
+  const aktiv = d.bøker.findIndex(b => (b.isbn || "").replace(/[\s-]/g, "") === d.isbn);
+  serieData = { serie: d.serie, grupper, aktiv };
+  $("serietittel").textContent = "Serie: " + d.serie;
+  $("seriehjelp").textContent = d.bøker.length + " bøker på " + grupper.length
+    + (grupper.length === 1 ? " etikett" : " etikettar") + ". Vel boka som skal uthevast, og rett tekstane om du vil.";
+
+  const c = $("serieinnhald");
+  c.innerHTML = "";
+  grupper.forEach((linjer, g) => {
+    const sek = document.createElement("div");
+    sek.className = "seriegruppe";
+    if (grupper.length > 1) sek.innerHTML = `<h3>Etikett ${g + 1}</h3>`;
+    linjer.forEach((tekst, l) => {
+      const rad = document.createElement("label");
+      rad.className = "serierad";
+      rad.innerHTML = '<input type="radio" name="aktivbok"><input type="text">';
+      const [radio, felt] = rad.querySelectorAll("input");
+      radio.checked = g * 5 + l === aktiv;
+      radio.setAttribute("aria-label", "Uthev linje " + (l + 1));
+      radio.onchange = () => { serieData.aktiv = g * 5 + l; teiknSerieForhand(); };
+      felt.value = tekst;
+      felt.setAttribute("aria-label", "Linje " + (l + 1));
+      felt.oninput = () => { serieData.grupper[g][l] = felt.value; planleggSerieForhand(); };
+      sek.append(rad);
+    });
+    const forh = document.createElement("div");
+    forh.className = "serieforh";
+    sek.append(forh);
+    c.append(sek);
+  });
+  $("serieskrivut").hidden = false;
+  teiknSerieForhand();
+}
+
+function serieEtikettar() {
+  return serieData.grupper.map((linjer, g) => {
+    const l = linjer.map(t => t.trim());
+    while (l.length && !l[l.length - 1]) l.pop();   // tomme linjer på slutten fell bort
+    const a = serieData.aktiv - g * 5;
+    return { linjer: l, aktiv: a >= 0 && a < l.length ? a : -1 };
+  });
+}
+
+let serieTimer;
+function planleggSerieForhand() { clearTimeout(serieTimer); serieTimer = setTimeout(teiknSerieForhand, 220); }
+async function teiknSerieForhand() {
+  const plassar = $("serieinnhald").querySelectorAll(".serieforh");
+  const etikettar = serieEtikettar();
+  for (let g = 0; g < etikettar.length; g++) {
+    if (!etikettar[g].linjer.length) { plassar[g].innerHTML = ""; continue; }
+    try {
+      const { xml } = await api("/api/serieliste/forhandsvis", { serie: serieData.serie, ...etikettar[g] });
+      plassar[g].replaceChildren(teiknEtikett(xml, 130));
+    } catch (_) {}
+  }
+}
+
+$("serieskrivut").onclick = async () => {
+  const etikettar = serieEtikettar().filter(e => e.linjer.length);
+  $("serieskrivut").disabled = true;
+  let feil = 0;
+  for (const e of etikettar) {
+    try {
+      const svar = await api("/api/serieliste/skriv-ut", { serie: serieData.serie, ...e, skrivar: konfig.skrivar });
+      if (!svar.ok) { feil++; melding(svar.melding, true); }
+    } catch (err) { feil++; melding(err.message, true); }
+  }
+  $("serieskrivut").disabled = false;
+  if (!feil) { $("seriedlg").close(); melding("Serieliste skriven ut: " + serieData.serie); }
+};
+
+// ── Skrivar ──────────────────────────────────────────────────────────
+$("innstknapp").onclick = () => { $("skrivarnamn").value = konfig.skrivar; $("innstdlg").showModal(); };
+$("innstdlg").addEventListener("close", async () => {
+  if ($("innstdlg").returnValue !== "lagre") return;
+  konfig.skrivar = $("skrivarnamn").value.trim();
+  try { await api("/api/skrivar", { skrivar: konfig.skrivar }); melding("Skrivarnamnet er lagra."); }
+  catch (e) { melding(e.message, true); }
+});
+
+// ── Snarvegar ────────────────────────────────────────────────────────
+document.addEventListener("keydown", e => {
+  if (document.querySelector("dialog[open]")) return;
+  const iFelt = e.target.matches("input, select, textarea") && e.target.id !== "scan";
+  if (e.ctrlKey && e.key === "Enter") { e.preventDefault(); $("skrivut").click(); return; }
+  if (iFelt) return;
+  if (e.key === "Delete" && !(e.target.id === "scan" && $("scan").value)) { e.preventDefault(); fjernVald(); return; }
+  if ((e.key === "ArrowUp" || e.key === "ArrowDown") && bøker.length && !(e.target.id === "scan" && $("scan").value)) {
+    e.preventDefault();
+    const i = bøker.findIndex(b => b.id === valdId);
+    const n = Math.max(0, Math.min(bøker.length - 1, i + (e.key === "ArrowDown" ? 1 : -1)));
+    valdId = bøker[n].id;
+    lagreLista();
+    teikn();
+  }
+});
+
+// ── Start ────────────────────────────────────────────────────────────
+function teikn() { teiknListe(); fyllSkjema(); planleggForhand(); }
+
+(async function start() {
+  lesLista();
+  if (!vald()) valdId = bøker[0]?.id || null;
+  teikn();
+  try {
+    konfig = await api("/api/konfig");
+    $("kategoriar").innerHTML = konfig.kategoriar.map(k => `<option value="${k}">`).join("");
+    $("malform").innerHTML = konfig.malformer.map(m => `<option>${m}</option>`).join("");
+    teikn();
+  } catch (_) {}
+  $("scan").focus();
+})();
+</script>
+</body>
+</html>
