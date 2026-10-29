@@ -175,10 +175,10 @@
           </Margin>
           <HorizontalAlignment>Center</HorizontalAlignment>
           <VerticalAlignment>Middle</VerticalAlignment>
-          <FitMode>None</FitMode>
+          <FitMode>AlwaysFit</FitMode>
           <IsVertical>False</IsVertical>
           <FormattedText>
-            <FitMode>None</FitMode>
+            <FitMode>AlwaysFit</FitMode>
             <HorizontalAlignment>Center</HorizontalAlignment>
             <VerticalAlignment>Middle</VerticalAlignment>
             <IsVertical>False</IsVertical>
@@ -187,7 +187,7 @@
                 <Text>A</Text>
                 <FontInfo>
                   <FontName>Segoe UI</FontName>
-                  <FontSize>72</FontSize>
+                  <FontSize>90</FontSize>
                   <IsBold>True</IsBold>
                   <IsItalic>False</IsItalic>
                   <IsUnderline>False</IsUnderline>
