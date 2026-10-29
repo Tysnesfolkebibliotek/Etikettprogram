@@ -34,6 +34,7 @@ def api_get(sti: str, q: dict):
         return {
             "kategoriar": kjerne.ALLE_KATEGORIAR,
             "malformer": kjerne.MALFOMER,
+            "emne": kjerne.EMNE,
             "fargar": kjerne.KAT_FARGAR,
             "skrivar": _skrivar({}),
         }

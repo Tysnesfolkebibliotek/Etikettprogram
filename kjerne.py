@@ -122,6 +122,16 @@ def dewey_til_emneord(dewey: str) -> str:
         return "Historie"
     return "Generelt"
 
+# Alle emna dewey_til_emneord kan gi, til forslagslista i nettsida
+EMNE = sorted({
+    "Andre verdskrig", "Biografi", "Film", "Filosofi", "Fotball", "Friluftsliv", "Fritid",
+    "Første verdskrig", "Gaming", "Generelt", "Geografi og reise", "Handarbeid",
+    "Heim og familie", "Helse", "Historie", "Informasjonsteknologi", "Kunst",
+    "Landbruk/husdyr", "Litteratur", "Litteraturhistorie", "Musikk", "Naturvitskap",
+    "Norge", "Oldtida", "Polarområda", "Psykologi", "Religion", "Samfunn", "Sport",
+    "Språk", "Teater", "Teknikk", "Økonomi", *VERDSDELAR_HISTORIE.values(),
+})
+
 def aldersgruppe(kode: str) -> str:
     """Returner 'barn', 'ungdom' eller 'vaksen' basert på MARC-alderskode."""
     kode = (kode or "").lower().strip()

@@ -302,13 +302,14 @@
         </div>
         <div class="to">
           <label>Dewey <input data-felt="dewey"></label>
-          <label>Emne (sakprosa) <input data-felt="emne"></label>
+          <label>Emne (sakprosa) <input data-felt="emne" list="emneliste"></label>
         </div>
         <div class="to">
           <label>Serienamn <input data-felt="serie"></label>
           <label>Nummer i serien <input data-felt="nummer" inputmode="numeric"></label>
         </div>
       </fieldset>
+      <datalist id="emneliste"></datalist>
     </div>
   </section>
 </div>
@@ -545,7 +546,7 @@ function oppdaterHovud() {
   $("hovudtittel").textContent = bok.tittel || "(utan tittel)";
   $("hovudforf").textContent = [bok.forfatter, bok.isbn].filter(Boolean).join(", ");
   const km = $("katmerke");
-  km.textContent = bok.kategori || (bok.er_sakprosa ? "Sakprosa" : "Ingen kategori");
+  km.textContent = bok.kategori || "Sakprosa";
   km.style.background = katFarge(bok.kategori);
   $("malmerke").textContent = bok.er_biletbok ? "Biletbok-mal" : "Standard-mal";
 }
@@ -661,6 +662,10 @@ function teiknEtikett(xmlTekst, skala = PX_PER_TOMME) {
   return flate;
 }
 
+// Det som blir sendt til etiketten: utan kategori er boka sakprosa,
+// så etiketten får emne og Dewey. Med kategori blir ho skjønnlitteratur.
+const tilEtikett = bok => ({ ...bok, er_sakprosa: !bok.kategori });
+
 let forhandTimer, forhandNr = 0;
 function planleggForhand() {
   clearTimeout(forhandTimer);
@@ -675,7 +680,7 @@ async function teiknForhand() {
   if (!bok) { plass.innerHTML = ""; return; }
   const nr = ++forhandNr;
   try {
-    const { xml } = await api("/api/forhandsvis", { bok });
+    const { xml } = await api("/api/forhandsvis", { bok: tilEtikett(bok) });
     if (nr !== forhandNr) return;   // eit nyare kall er på veg
     plass.replaceChildren(teiknEtikett(xml));
   } catch (e) { melding(e.message, true); }
@@ -691,7 +696,7 @@ function blandFarge(hex) {
 
 // ── Utskrift ─────────────────────────────────────────────────────────
 async function skrivUt(bok) {
-  const svar = await api("/api/skriv-ut", { bok, skrivar: konfig.skrivar });
+  const svar = await api("/api/skriv-ut", { bok: tilEtikett(bok), skrivar: konfig.skrivar });
   if (svar.ok) { bok.utskriven = true; lagreLista(); }
   return svar;
 }
@@ -888,6 +893,7 @@ function teikn() { teiknListe(); fyllSkjema(); planleggForhand(); }
   try {
     konfig = await api("/api/konfig");
     lagKategoriliste();
+    $("emneliste").replaceChildren(...(konfig.emne || []).map(e => new Option(e)));
     $("malform").innerHTML = konfig.malformer.map(m => `<option>${m}</option>`).join("");
     teikn();
   } catch (_) {}
