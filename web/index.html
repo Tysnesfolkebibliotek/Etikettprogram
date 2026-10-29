@@ -40,6 +40,7 @@
   }
 
   * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
   html, body { height: 100%; }
   body {
     margin: 0; background: var(--papir); color: var(--blekk);
@@ -296,6 +297,11 @@
       <fieldset>
         <legend>Etiketten</legend>
         <label>Kategori <select data-felt="kategori" id="kategori"></select></label>
+        <label id="biletboktype" hidden>Type biletbok (øvst på etiketten)
+          <select data-felt="biletbok_type">
+            <option>Biletbøker</option><option>Peikebøker</option><option>Myldrebøker</option>
+          </select>
+        </label>
         <div class="to">
           <label>Hyllekode <input data-felt="shelf"></label>
           <label>Målform <select data-felt="malfom" id="malform"></select></label>
@@ -524,6 +530,7 @@ function lagKategoriliste(ekstra) {
 
 function fyllSkjema() {
   const bok = vald();
+  if (bok && bok.er_biletbok && !bok.biletbok_type) bok.biletbok_type = "Biletbøker";
   if (bok && bok.kategori && ![...$("kategori").options].some(o => o.value === bok.kategori)) lagKategoriliste(bok.kategori);
   $("skjematom").hidden = !!bok;
   $("skjemainnhald").hidden = !bok;
@@ -549,6 +556,7 @@ function oppdaterHovud() {
   km.textContent = bok.kategori || "Sakprosa";
   km.style.background = katFarge(bok.kategori);
   $("malmerke").textContent = bok.er_biletbok ? "Biletbok-mal" : "Standard-mal";
+  $("biletboktype").hidden = !bok.er_biletbok;
 }
 
 for (const el of document.querySelectorAll("[data-felt]")) {
@@ -556,7 +564,10 @@ for (const el of document.querySelectorAll("[data-felt]")) {
     const bok = vald();
     if (!bok) return;
     bok[el.dataset.felt] = el.value;
-    if (el.dataset.felt === "kategori") bok.er_biletbok = el.value.toLowerCase() === "biletbøker";
+    if (el.dataset.felt === "kategori") {
+      bok.er_biletbok = el.value.toLowerCase() === "biletbøker";
+      if (bok.er_biletbok && !bok.biletbok_type) bok.biletbok_type = "Biletbøker";
+    }
     bok.utskriven = false;
     lagreLista();
     oppdaterHovud();
