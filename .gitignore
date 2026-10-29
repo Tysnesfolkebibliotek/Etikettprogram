@@ -1,0 +1,19 @@
+# Python-mellomfiler
+__pycache__/
+*.py[cod]
+
+# Virtuelle miljø
+venv/
+.venv/
+
+# Byggjefiler (t.d. frå PyInstaller)
+build/
+dist/
+*.spec
+*.exe
+
+# Mellombelse etikettfiler og systemfiler
+boketikett_print.dymo
+Thumbs.db
+desktop.ini
+.DS_Store
