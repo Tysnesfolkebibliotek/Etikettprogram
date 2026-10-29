@@ -295,7 +295,7 @@
       </fieldset>
       <fieldset>
         <legend>Etiketten</legend>
-        <label>Kategori <input data-felt="kategori" list="kategoriar"></label>
+        <label>Kategori <select data-felt="kategori" id="kategori"></select></label>
         <div class="to">
           <label>Hyllekode <input data-felt="shelf"></label>
           <label>Målform <select data-felt="malfom" id="malform"></select></label>
@@ -309,7 +309,6 @@
           <label>Nummer i serien <input data-felt="nummer" inputmode="numeric"></label>
         </div>
       </fieldset>
-      <datalist id="kategoriar"></datalist>
     </div>
   </section>
 </div>
@@ -513,8 +512,18 @@ function teiknListe() {
 }
 
 // ── Skjemaet ─────────────────────────────────────────────────────────
+// Kategorimenyen: alle kjende kategoriar, pluss «ingen» for sakprosa.
+// Har boka ein kategori som ikkje står i lista, blir han lagd til så han ikkje forsvinn.
+function lagKategoriliste(ekstra) {
+  const sel = $("kategori");
+  const liste = [...konfig.kategoriar];
+  if (ekstra && !liste.includes(ekstra)) liste.push(ekstra);
+  sel.replaceChildren(new Option("Ingen (sakprosa: emne + Dewey)", ""), ...liste.map(k => new Option(k, k)));
+}
+
 function fyllSkjema() {
   const bok = vald();
+  if (bok && bok.kategori && ![...$("kategori").options].some(o => o.value === bok.kategori)) lagKategoriliste(bok.kategori);
   $("skjematom").hidden = !!bok;
   $("skjemainnhald").hidden = !bok;
   $("skrivut").disabled = !bok;
@@ -610,13 +619,13 @@ function teiknEtikett(xmlTekst, skala = PX_PER_TOMME) {
     boks.className = "obj";
     Object.assign(boks.style, { left: x + "px", top: y + "px", width: w + "px", height: h + "px" });
 
-    // Rotert tekst: ein indre boks med bytte breidd/høgd, snudd 90° mot klokka
+    // Rotert tekst: ein indre boks med bytte breidd/høgd, snudd 90° med klokka (les ovanfrå og ned)
     const indre = document.createElement("div");
     const iw = rotert ? h : w, ih = rotert ? w : h;
     indre.className = "rot";
     Object.assign(indre.style, {
       width: iw + "px", height: ih + "px",
-      transform: "translate(-50%, -50%)" + (rotert ? " rotate(-90deg)" : ""),
+      transform: "translate(-50%, -50%)" + (rotert ? " rotate(90deg)" : ""),
       justifyContent: { Left: "flex-start", Right: "flex-end" }[halign] || "center",
       alignItems: { Top: "flex-start", Bottom: "flex-end" }[valign] || "center",
     });
@@ -632,13 +641,15 @@ function teiknEtikett(xmlTekst, skala = PX_PER_TOMME) {
     indre.append(span);
     boks.append(indre);
     flate.append(boks);
-    if (tilpassa) tilpass.push({ span, iw, ih });
+    if (tilpassa) tilpass.push({ span, iw, ih, maks: pt / 72 * skala });
   }
 
-  // «AlwaysFit»: gjer teksten så stor som han får plass til i boksen
+  // «AlwaysFit»: krymp teksten til han får plass i boksen (men aldri større enn malen seier)
   requestAnimationFrame(() => {
-    for (const { span, iw, ih } of tilpass) {
-      let lo = 2, hi = ih * 1.2;
+    for (const { span, iw, ih, maks } of tilpass) {
+      span.style.fontSize = maks + "px";
+      if (span.scrollWidth <= iw && span.scrollHeight <= ih) continue;
+      let lo = 2, hi = maks;
       for (let i = 0; i < 14; i++) {
         const mid = (lo + hi) / 2;
         span.style.fontSize = mid + "px";
@@ -876,7 +887,7 @@ function teikn() { teiknListe(); fyllSkjema(); planleggForhand(); }
   teikn();
   try {
     konfig = await api("/api/konfig");
-    $("kategoriar").innerHTML = konfig.kategoriar.map(k => `<option value="${k}">`).join("");
+    lagKategoriliste();
     $("malform").innerHTML = konfig.malformer.map(m => `<option>${m}</option>`).join("");
     teikn();
   } catch (_) {}
